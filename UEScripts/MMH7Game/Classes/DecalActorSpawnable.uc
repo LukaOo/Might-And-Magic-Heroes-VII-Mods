@@ -1,0 +1,2 @@
+class DecalActorSpawnable extends DecalActorMovable;
+

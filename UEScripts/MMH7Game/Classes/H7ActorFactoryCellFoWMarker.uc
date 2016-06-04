@@ -1,0 +1,2 @@
+class H7ActorFactoryCellFoWMarker extends H7ActorFactory;
+

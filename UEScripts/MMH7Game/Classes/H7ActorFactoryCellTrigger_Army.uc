@@ -1,0 +1,2 @@
+class H7ActorFactoryCellTrigger_Army extends H7ActorFactory;
+
