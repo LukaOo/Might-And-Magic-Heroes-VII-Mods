@@ -16,26 +16,16 @@
 #include "CombatDumper.h"
 #include "ArmyFeaturizer.h"
 #include "CombatFeaturizer.h"
-
+#include "HookBase.h"
 
 
 
 #pragma comment( lib, "psapi.lib" )
 
-const std::string logpath("C:\\Users\\Dima\\Documents\\GitHub\\Might-And-Magic-Heroes-VII-Mods\\logs\\mod_inject.log");
-std::ofstream clog(logpath.c_str());
-
 DWORD64 GObjects = 0;
 DWORD64 GNames = 0;
 DWORD64 ModuleBaseAddr = 0;
 std::shared_ptr<VMTManager> _vmt;
-std::shared_ptr<CombatDumper> _combat_dumper;
-ProcessInternalHooks _hook_func_list;
-
-///
-/// Declare static features
-///
-CombatFeaturizerPtr _combatFeatures;
 
 //void init_ptrs_list(); 
 //DWORD64 funcs_ptrs[0x58]; 
@@ -43,14 +33,6 @@ CombatFeaturizerPtr _combatFeatures;
 const DWORD ProcessEventsLength = 0x24A;
 
 std::set<std::string> __functions_filter;
-
-bool is_f_filter(char* fname)
-{
-	if( !strcmp(fname, "Function MMH7Game.H7CombatMapCell.SetForeshadow")) return true;
-	if( !strcmp(fname,"Function MMH7Game.H7CombatMapCell.UpdateSelectionType")) return true;
-	if( !strcmp(fname,"Function MMH7Game.H7CombatMapCell.GetObstacle")) return true;
-  return false;
-}
 
 typedef void (*pThink)( void* thisptr, class AH7Unit* Unit, float DeltaTime) ;
 
@@ -81,9 +63,6 @@ void OnAttach()
 
   // Initialize all function to be detoured
   Init_Functions();
-
-  _combatFeatures.reset(new CombatFeaturizer());
-  _combat_dumper.reset(new CombatDumper(clog, _combatFeatures) );
    
   UObject* pObject = UObject::GObjObjects()->Data[UObject_index];
   UFunction* pAICombatMapThink = (UFunction*)UObject::FindObject<UObject>(FUNCTION_THINK);
@@ -122,17 +101,6 @@ void OnAttach()
   
   clog << "Detour ok: " << SDKMC_SSHEX( OriginalProcessInternal->get(), 8) << std::endl;
 
-  
-  //int c =  _vmt->GetCountSize();
-  
-  //for( int x=0; x < c; x++)
-  //{
-  //    clog << "\tHooking ProcessEvent: Index: " << x << " ptr: " << SDKMC_SSHEX(funcs_ptrs[x],8) << std::endl;
-  //   _vmt->HookFunction((void*)funcs_ptrs[82], 82);
-  //}
-
-  //_vmt->DumpVmt(clog);
-	 //Sleep(10000);
 }
 
 
@@ -155,143 +123,7 @@ void TraceStack()
 static int entry_count = 0;
 void         * stack[ 100 ];
 
-int __fastcall hkProcessInternal ( __int64 This, __int64 Stack_frame, void* pResult )
-{
-	FFrame* pStack = (FFrame*) Stack_frame;
-	UObject* pthis = (UObject* ) This;
-	bool isResolveCombat=false;
-    
 
-	if ( pStack && pthis &&  !is_f_filter( pStack->Node->GetFullName() ) )
-	{
-		time_t t = time(NULL);
-		struct tm *tm = localtime(&t);
-		char date[20];
-		strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", tm);
-		clog << date << " [" << GetCurrentThreadId() << "] Object: " << SDKMC_SSHEX(pthis, 8) << ", name: " << pthis->GetFullName();
-		if ( pStack->Node )
-		{
-			clog << ", func: " << pStack ->Node->GetFullName();  
-		}
-		std::string func(pStack ->Node->GetFullName());
-
-		ProcessInternalPtr pHookFunc =  _hook_func_list.Get(func);
-		if( pHookFunc ) return pHookFunc(This, Stack_frame, pResult);
-
-		if ( pStack->Locals != NULL && !strcmp("Function MMH7Game.H7CommandQueue.StartUnitCommand", pStack ->Node->GetFullName() ))
-		{
-			UH7CommandQueue_execStartUnitCommand_Parms *params = (UH7CommandQueue_execStartUnitCommand_Parms*) pStack->Locals;
-			clog << " Playerindex: " << params->PlayerIndex;
-		}
-
-		if ( pStack->Locals != NULL && !strcmp("Function MMH7Game.H7CreatureStack.DataChanged", pStack ->Node->GetFullName() ))
-		{
-			AH7CreatureStack_execDataChanged_Parms *params = (AH7CreatureStack_execDataChanged_Parms* ) pStack->Locals;
-			if( params && params->cause.Data ){
-				std::wstring s(params->cause.Data);
-				std::string  s2(s.begin(), s.end());
-				clog << " Len: " << params->cause.Count << " cause: " << s2.c_str();
-				
-			}
-		}
-
-		if ( pStack->Locals != NULL && !strcmp("Function MMH7Game.H7CommandQueue.Enqueue", pStack ->Node->GetFullName() ))
-		{
-			UH7CommandQueue_execEnqueue_Parms* params = (UH7CommandQueue_execEnqueue_Parms*) pStack->Locals;
-			if( params->Cmd )
-			{
-				clog << " Command type: " << (int) params->Cmd->mCommandType; 
-				if( params->Cmd->mPath.Data){
-					clog << " Path:"; 
-					for ( int i = 0; i < params->Cmd->mPath.Count; i++){
-						clog << " X:" << params->Cmd->mPath.Data[i]->mPosition.X;
-                        clog << " Y:" << params->Cmd->mPath.Data[i]->mPosition.Y;
-					}
-				}
-
-				if( params->Cmd->mSource )
-					clog << " Source: " << params->Cmd->mSource->GetFullName(); 
-			
-
-				if( params->Cmd->mAbility )
-					clog << " Ability: " << params->Cmd->mAbility->GetFullName();
-
-				if( params->Cmd->mAbilityTarget )
-					clog << " Ability Target: " << params->Cmd->mAbilityTarget->GetFullName();
-
-			}
-		}
-
-
-		if ( pStack->Locals != NULL && !strcmp("Function MMH7Game.H7GameProcessor.ResolveCombat", pStack ->Node->GetFullName() ))
-		{
-           UH7GameProcessor_execResolveCombat_Parms* params = (UH7GameProcessor_execResolveCombat_Parms*) pStack->Locals;
-		   isResolveCombat = true;
-		   if( params )
-		   {
-			   clog << " isMainResult: " << params->isMainResult << " retvalue: " << params->ReturnValue << 
-				   "result action: " << SDKMC_SSHEX(params->Result, 8);
-		   }
-		}
-
-		if( pStack->Locals != NULL &&!strcmp("Function MMH7Game.H7CreatureStack.MoveCreature",  pStack ->Node->GetFullName()) )
-		{
-		   
-		   AH7CreatureStack_execMoveCreature_Parms* params = (AH7CreatureStack_execMoveCreature_Parms*) pStack->Locals;
-		   clog << " Sizeof path: " << params->Path.Count;
-		      if (params->Target != NULL)
-			  {
-		         clog << " Move target name: " 
-			     << params->Target->GetFullName();
-			  }
-            
-		}
-
-		if( pStack->Locals != NULL  && !strcmp(FUNCTION_THINK, pStack ->Node->GetFullName()))
-		{
-			AH7AiCombatMap_execThink_Parms* params = (AH7AiCombatMap_execThink_Parms*) pStack->Locals;
-
-			clog <<", Unit addr: " << SDKMC_SSHEX(params->Unit, 8);
-
-			if( params->Unit )
-			{
-		
-				clog << " p1: " <<  SDKMC_SSHEX(params->Unit->VfTable_IH7IEffectTargetable.Dummy, 8)
-					 << " p2: " << SDKMC_SSHEX(params->Unit->VfTable_IH7ICaster.Dummy, 8);
-				clog << " name: " << params->Unit->mName.Data;
-				//UFunction* pFunction = (UFunction*) *(__int64 *)(Stack_frame + 20);
-				//if( pFunction != NULL && (DWORD64)pFunction > 0x000007FFF0000000ll )
-				//{
-				//	clog << " Name: " << pFunction->GetFullName();
-				//}
-
-				//clog   << " Function: Addr: " << SDKMC_SSHEX(pFunction, 8) << " In stack: " << SDKMC_SSHEX(pStack->Node, 8);
-				//clog   << " Object: " << SDKMC_SSHEX(pStack->Object, 8) << " Stack: " << SDKMC_SSHEX(pStack->Stack, 8)
-				//	   << " Locals: " << SDKMC_SSHEX(pStack->Locals, 8);
-				//clog << " Result: Addr: " << SDKMC_SSHEX(pResult, 8);
-			}
-	
-			
-		}
-
-		clog << std::endl;
-	}
-
-	int retval = ((ProcessInternalPtr)OriginalProcessInternal->get())(This,  Stack_frame, pResult);
-
-	if ( isResolveCombat ){
-
-		UH7GameProcessor_execResolveCombat_Parms* params = (UH7GameProcessor_execResolveCombat_Parms*) pStack->Locals;
-		
-		if( params && params->Result )
-		{
-			clog << " isMainResult: " << params->isMainResult << " retvalue: " << params->ReturnValue << 
-				    "result action: " << params->Result->mAction << std::endl;
-		}
-	}
-
-  return retval;
-}
 
 void __fastcall hkProcessEvent ( void* pthis, class UFunction* pFunction, void* pParams, void* pResult)
 {
@@ -396,13 +228,6 @@ void Init_Core()
 	GNames =  baseAddress + GNames_Offset;
 
 	clog << "GNames Address: " << SDKMC_SSHEX(GNames, 8) << "\n";
-}
-
-void Init_Functions()
-{
-	_hook_func_list.Add("Function MMH7Game.H7Command.CommandPlay", hkH7Command_CommandPlay);
-	_hook_func_list.Add("Function MMH7Game.H7Command.CommandStop", hkH7Command_CommandStop);
-	_hook_func_list.Add("Function MMH7Game.H7CombatController.GetInstance", CombatDumper_ProcessInternal);
 }
 
 

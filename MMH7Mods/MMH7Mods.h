@@ -1,4 +1,5 @@
 #pragma once
+
 #include <windows.h>
 #include <iostream>
 #include <memory>
@@ -42,27 +43,7 @@ struct FFrame
 	void* Locals;             // 0x002C //0x08 // local variables   
 };
 
-///
-/// Class for function hooks list  
-///
-class ProcessInternalHooks
-{
-public:
 
-	void Add(const char* name, ProcessInternalPtr func) { _hooks[std::string(name)] = func; };
-
-	///
-	/// Get hook function pointer 
-	///
-	ProcessInternalPtr Get(const std::string& func_name) 
-	{ 
-		std::map<std::string, ProcessInternalPtr>::iterator it = _hooks.find(func_name);
-		return (_hooks.end() == it)? NULL: it->second;
-	}
-
-private:
-	std::map<std::string, ProcessInternalPtr> _hooks;
-};
 
 void DumpH7Command(class UH7Command* command);
 

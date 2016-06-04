@@ -6,7 +6,10 @@
 
 
 
-CombatDumper::CombatDumper(std::ostream& dump_stream, CombatFeaturizerPtr& combatFeturizer) :
+CombatDumper::CombatDumper(std::ostream& dump_stream, CombatFeaturizerPtr& combatFeturizer) : HookBase("CombatDumper"),
+			   _fCommandPlay(this),
+			   _fCommandStop(this),
+			   _fGetInstance(this),
               _combat_controller(NULL),
 		      _dump_stream(dump_stream),
 			  _combatFeaturesers(combatFeturizer)
@@ -58,7 +61,7 @@ void CombatDumper::DumpMap()
 	_dump_stream << "\n";
 }
 
-int CombatDumper::ProcessInternal ( __int64 This, __int64 Stack_frame, void* pResult)
+int CombatDumper::GetInstanceFun ( __int64 This, __int64 Stack_frame, void* pResult)
 {
 	FFrame* pStack = (FFrame*) Stack_frame;
 	
@@ -67,10 +70,10 @@ int CombatDumper::ProcessInternal ( __int64 This, __int64 Stack_frame, void* pRe
 	AH7CombatController_execGetInstance_Parms* params = (AH7CombatController_execGetInstance_Parms*) pResult;
  	_combat_controller = params->ReturnValue;
 
-	return retval;
+	return retval; 
 }
 
-int  hkH7Command_CommandPlay ( __int64 This, __int64 Stack_frame, void* pResult )
+int  CombatDumper::CommandPlayFunc ( __int64 This, __int64 Stack_frame, void* pResult )
 {
 	UH7Command* command = (UH7Command*)This;
 	FFrame * Stack = (FFrame*) Stack_frame;
@@ -83,7 +86,7 @@ int  hkH7Command_CommandPlay ( __int64 This, __int64 Stack_frame, void* pResult 
  return retval;
 }
 
-int  hkH7Command_CommandStop ( __int64 This, __int64 Stack_frame, void* pResult )
+int  CombatDumper::CommandStopFunc ( __int64 This, __int64 Stack_frame, void* pResult )
 {
 	UH7Command* command = (UH7Command*)This;
 	FFrame * Stack = (FFrame*) Stack_frame;
@@ -91,14 +94,10 @@ int  hkH7Command_CommandStop ( __int64 This, __int64 Stack_frame, void* pResult 
 
 	DumpH7Command(command);
 
-	_combat_dumper->DumpMap();
+	DumpMap();
 
     int retval = ((ProcessInternalPtr)OriginalProcessInternal->get())(This,  Stack_frame, pResult);
 
  return retval;
 }
 
-int CombatDumper_ProcessInternal ( __int64 This, __int64 Stack_frame, void* pResult)
-{
-	return _combat_dumper->ProcessInternal(This, Stack_frame, pResult); 
-}
