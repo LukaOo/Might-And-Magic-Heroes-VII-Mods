@@ -1,4 +1,4 @@
-# Maight &amp; Magic Heroes VII Mods
+# Might &amp; Magic Heroes VII Mods
 Mods for Might &amp; Magic Heroes VII
 <br>
 Directory structure:

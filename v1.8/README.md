@@ -1,4 +1,4 @@
-# Maight &amp; Magic Heroes VII Mods
+# Might &amp; Magic Heroes VII Mods
 Mods for Might &amp; Magic Heroes VII. patch 1.8
 <br>
 Here are game's offsets for some main objects:
