@@ -6,10 +6,7 @@
 #include "SdkClasses.h"
 
 
-
-HooksHolderPtr __hooksHolder(new HooksHolder());
-const std::string logpath("C:\\Users\\Dima\\Documents\\GitHub\\Might-And-Magic-Heroes-VII-Mods\\logs\\mod_inject.log");
-std::ofstream clog(logpath.c_str());
+HooksHolderPtr __hooksHolder;
 
 ///
 /// Declare static features

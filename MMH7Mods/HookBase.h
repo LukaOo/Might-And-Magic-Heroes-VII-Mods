@@ -59,7 +59,7 @@ public:
 		return (_hooks.end() == it)? NULL: it->second;
 	}
 
-	int GetSize() const {return _hooks.size(); }
+	int GetSize() const {return (int) _hooks.size(); }
 
 private:
 
@@ -106,5 +106,6 @@ private:
 
 typedef std::shared_ptr<HooksHolder> HooksHolderPtr;
 
+extern HooksHolderPtr __hooksHolder;
 
 

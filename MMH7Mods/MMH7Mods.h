@@ -6,14 +6,20 @@
 #include <map>
 #include <string>
 #include "vmt.h"
+#include "ModsConfig.h"
 
 #ifdef _MSC_VER
 	#pragma pack ( push, 0x4 )
 #endif
 
+extern std::shared_ptr<ModsConfig> __Cfg;
+
+
 void OnAttach();
 void Init_Core();
 void Init_Functions();
+void Read_Config();
+
 void __fastcall hkProcessEvent ( void* pthis, class UFunction* pFunction, void* pParms, void* pResult = NULL );
 
 int __fastcall hkProcessInternal ( __int64 pthis, __int64 stach_frame, void* pResult );

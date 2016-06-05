@@ -172,7 +172,7 @@
 class UObject
 {
 public:
-	struct FPointer                                    VfTableObject;                                    		// 0x0000 (0x0008) [0x0000000000821002]              ( CPF_Const | CPF_Native | CPF_EditConst | CPF_NoExport )
+	// struct FPointer                                    VfTableObject;                                    		// 0x0000 (0x0008) [0x0000000000821002]              ( CPF_Const | CPF_Native | CPF_EditConst | CPF_NoExport )
 	struct FPointer                                    HashNext;                                         		// 0x0008 (0x0008) [0x0000000000021002]              ( CPF_Const | CPF_Native | CPF_EditConst )
 	struct FQWord                                      ObjectFlags;                                      		// 0x0010 (0x0008) [0x0000000000021002]              ( CPF_Const | CPF_Native | CPF_EditConst )
 	struct FPointer                                    HashOuterNext;                                    		// 0x0018 (0x0008) [0x0000000000021002]              ( CPF_Const | CPF_Native | CPF_EditConst )

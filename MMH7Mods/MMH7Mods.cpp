@@ -20,12 +20,17 @@
 
 
 
+
+
 #pragma comment( lib, "psapi.lib" )
 
 DWORD64 GObjects = 0;
 DWORD64 GNames = 0;
 DWORD64 ModuleBaseAddr = 0;
 std::shared_ptr<VMTManager> _vmt;
+std::shared_ptr<ModsConfig> __Cfg;
+std::ofstream clog; 
+
 
 //void init_ptrs_list(); 
 //DWORD64 funcs_ptrs[0x58]; 
@@ -58,27 +63,40 @@ CRITICAL_SECTION CriticalSection;
 
 void OnAttach()
 {
+  __Cfg.reset(new ModsConfig() );
+  clog.open(__Cfg->GetLogName().c_str());
+  __hooksHolder.reset(new HooksHolder());
+
   // Initialize core pointers 
   Init_Core();
 
   // Initialize all function to be detoured
   Init_Functions();
    
-  UObject* pObject = UObject::GObjObjects()->Data[UObject_index];
+  // UObject* pObject = UObject::GObjObjects()->Data[UObject_index];
+  // clog << "Object Name: " << pObject->GetFullName() << "\n";
+  // for ( int i = 0; i < UObject::GObjObjects()->Num(); i++ ){
+  //		UObject* p = UObject::GObjObjects()->Data[ i ];
+  //		if ( ! p )
+  //			continue;
+  //		clog <<  "Object: "<<  p->GetFullName() << " num: " << i << " nidx: " << p->Name.Index << " addr:" <<SDKMC_SSHEX(p,8) << "\n";
+  // }
+
+  // return;
+
   UFunction* pAICombatMapThink = (UFunction*)UObject::FindObject<UObject>(FUNCTION_THINK);
+
   if( pAICombatMapThink != NULL)
   {
 	  clog << "pAICombatMapThink: addr " << SDKMC_SSHEX(pAICombatMapThink,8) << " func addr: " <<  SDKMC_SSHEX(pAICombatMapThink->Func,8) 
 		   << " Offset: " << SDKMC_SSHEX((DWORD64)pAICombatMapThink->Func - ModuleBaseAddr,8) << "\n"; 
   }
- // clog << "Object Name: " << pObject->GetFullName() << "\n";
- // for ( int i = 0; i < UObject::GObjObjects()->Num(); i++ ){
- //		UObject* p = UObject::GObjObjects()->Data[ i ];
- //		if ( ! p )
- //			continue;
- // 		clog <<  "Object: "<<  p->GetFullName() << " num: " << i << " nidx: " << p->Name.Index << " addr:" <<SDKMC_SSHEX(p,8) << "\n";
- // }
-   
+  else{
+	  clog << "Getting address for '" << FUNCTION_THINK << "' failed" << "\n";
+	  clog << "Detour failed " << '\n';
+	  return ;
+  }
+
   UObject* pAICombatMap = UObject::FindObject<UObject>("Class MMH7Game.H7AiCombatMap");
 
   if( pAICombatMap == NULL ){
@@ -227,7 +245,8 @@ void Init_Core()
 
 	GNames =  baseAddress + GNames_Offset;
 
-	clog << "GNames Address: " << SDKMC_SSHEX(GNames, 8) << "\n";
+	clog << "GNames Address: " << SDKMC_SSHEX(GNames, 8) << std::endl;
+
 }
 
 

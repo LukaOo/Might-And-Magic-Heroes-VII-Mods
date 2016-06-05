@@ -54,6 +54,9 @@
     <ClInclude Include="HookBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ModsConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -90,6 +93,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HookBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModsConfig.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
