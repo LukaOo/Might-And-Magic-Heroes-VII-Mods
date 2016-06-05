@@ -57,6 +57,9 @@
     <ClInclude Include="ModsConfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameLog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -96,6 +99,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ModsConfig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

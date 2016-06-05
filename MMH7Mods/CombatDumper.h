@@ -1,18 +1,30 @@
 #pragma once
 #include <ostream>
+#include <fstream>
 #include <vector>
 
 #include "CombatFeaturizer.h"
 #include "HookBase.h"
 
-
+///
+/// Features dumper configuration
+///
+class DumperConfig
+{
+public :
+	 DumperConfig(const ModsConfig& config);
+public: 
+	const std::string sectionName;
+	const std::string dumpFile;
+	const bool isEnabled;
+};
 /**
  * Combatfeatures dumper
  **/
 class CombatDumper : public HookBase
 {
 public:
-	CombatDumper(std::ostream& dump_stream, CombatFeaturizerPtr& );
+	CombatDumper(const ModsConfig& config, CombatFeaturizerPtr& );
 	~CombatDumper(void);
 	void PopulateBuffs(void* buff_manager, std::vector<float>& c_vec);
 
@@ -29,6 +41,11 @@ private :
 	///
 	void DumpMap();
 private :
+	///
+	/// Config
+	///
+	DumperConfig _config;
+
 	///
 	/// Command play function class
 	///
@@ -67,15 +84,9 @@ private :
 
 private :
 	class AH7CombatController* _combat_controller;
-	std::ostream& _dump_stream;
+	std::ofstream _dump_stream;
 	CombatFeaturizerPtr _combatFeaturesers;
 };
-
-
-// externs 
-int CombatDumper_ProcessInternal ( __int64 This, __int64 Stack_frame, void* pResult);
-int  hkH7Command_CommandPlay ( __int64 This, __int64 Stack_frame, void* pResult );
-int  hkH7Command_CommandStop ( __int64 This, __int64 Stack_frame, void* pResult );
 
 typedef std::shared_ptr<CombatDumper> CombatDumperPtr;
 

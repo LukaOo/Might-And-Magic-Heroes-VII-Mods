@@ -17,6 +17,7 @@
 #include "ArmyFeaturizer.h"
 #include "CombatFeaturizer.h"
 #include "HookBase.h"
+#include "GameLog.h"
 
 
 
@@ -29,7 +30,6 @@ DWORD64 GNames = 0;
 DWORD64 ModuleBaseAddr = 0;
 std::shared_ptr<VMTManager> _vmt;
 std::shared_ptr<ModsConfig> __Cfg;
-std::ofstream clog; 
 
 
 //void init_ptrs_list(); 
@@ -47,40 +47,40 @@ pThink oldThink = 0;
 
 VMTManager::DetourPtr OriginalProcessInternal;
 
-void __stdcall hkThink ( void * pthis, class AH7Unit* Unit, float DeltaTime )
-{
-	clog << " Think: Caller_object: Addr: " << SDKMC_SSHEX(pthis, 8);
-
-    if( oldThink != NULL )
-	{
-		(*oldThink)(pthis, Unit, DeltaTime);
-	}
-}
-
 CRITICAL_SECTION CriticalSection;
 // Initialize any function to be detoured as ProcessInternall
 #define FUNCTION_THINK "Function MMH7Game.H7AiCombatMap.Think"
 
-void OnAttach()
+void Init_Variables()
 {
   __Cfg.reset(new ModsConfig() );
-  clog.open(__Cfg->GetLogName().c_str());
+  __gLog.reset(new GameLog(*__Cfg));
   __hooksHolder.reset(new HooksHolder());
+
+}
+
+void OnAttach()
+{
+  // Init variables
+  Init_Variables();
 
   // Initialize core pointers 
   Init_Core();
 
   // Initialize all function to be detoured
   Init_Functions();
-   
-  // UObject* pObject = UObject::GObjObjects()->Data[UObject_index];
-  // clog << "Object Name: " << pObject->GetFullName() << "\n";
-  // for ( int i = 0; i < UObject::GObjObjects()->Num(); i++ ){
-  //		UObject* p = UObject::GObjObjects()->Data[ i ];
-  //		if ( ! p )
-  //			continue;
-  //		clog <<  "Object: "<<  p->GetFullName() << " num: " << i << " nidx: " << p->Name.Index << " addr:" <<SDKMC_SSHEX(p,8) << "\n";
-  // }
+  
+  if(__gLog->Level() == LL_DEBUG)
+  {
+	  UObject* pObject = UObject::GObjObjects()->Data[UObject_index];
+	  LOG(LL_DEBUG) << "Object Name: " << pObject->GetFullName() << "\n";
+	  for ( int i = 0; i < UObject::GObjObjects()->Num(); i++ ){
+  			UObject* p = UObject::GObjObjects()->Data[ i ];
+  			if ( ! p )
+  				continue;
+  			LOG(LL_DEBUG) <<  "Object: " <<  p->GetFullName() << " num: " << i << " nidx: " << p->Name.Index << " addr:" <<SDKMC_SSHEX(p,8) << "\n";
+	  }
+  }
 
   // return;
 
@@ -88,36 +88,36 @@ void OnAttach()
 
   if( pAICombatMapThink != NULL)
   {
-	  clog << "pAICombatMapThink: addr " << SDKMC_SSHEX(pAICombatMapThink,8) << " func addr: " <<  SDKMC_SSHEX(pAICombatMapThink->Func,8) 
-		   << " Offset: " << SDKMC_SSHEX((DWORD64)pAICombatMapThink->Func - ModuleBaseAddr,8) << "\n"; 
+	  LOG(LL_VERBOSE) << "pAICombatMapThink: addr " << SDKMC_SSHEX(pAICombatMapThink,8) << " func addr: " <<  SDKMC_SSHEX(pAICombatMapThink->Func,8) 
+		              << " Offset: " << SDKMC_SSHEX((DWORD64)pAICombatMapThink->Func - ModuleBaseAddr,8) << "\n"; 
   }
   else{
-	  clog << "Getting address for '" << FUNCTION_THINK << "' failed" << "\n";
-	  clog << "Detour failed " << '\n';
+	  LOG(LL_VERBOSE) << "Getting address for '" << FUNCTION_THINK << "' failed" << "\n";
+	  LOG(LL_VERBOSE) << "Detour failed " << '\n';
 	  return ;
   }
 
   UObject* pAICombatMap = UObject::FindObject<UObject>("Class MMH7Game.H7AiCombatMap");
 
   if( pAICombatMap == NULL ){
-     clog << " Can not find object: H7AICombatMap " << std::endl;
+     LOG(LL_VERBOSE) << " Can not find object: H7AICombatMap " << "\n";
 	 return;
   }
 
   _vmt.reset(new VMTManager((LPVOID *)pAICombatMap));
-  _vmt->DumpVmt(clog);
+  // _vmt->DumpVmt(clog);
   //
-  clog << "Started detour : " << SDKMC_SSHEX( pAICombatMapThink->Func, 8) << std::endl;
+  LOG(LL_VERBOSE) << "Started detour : " << SDKMC_SSHEX( pAICombatMapThink->Func, 8) << '\n';
 
   OriginalProcessInternal = _vmt->DetourFunction(pAICombatMapThink->Func, hkProcessInternal);
   if ( OriginalProcessInternal->get() == NULL || 
 	   !OriginalProcessInternal->Start()){
-	  clog << "Detouring function failed" << std::endl;
+	  LOG(LL_VERBOSE) << "Detouring function failed" << '\n';
 	  return;
   }
 
   
-  clog << "Detour ok: " << SDKMC_SSHEX( OriginalProcessInternal->get(), 8) << std::endl;
+  LOG(LL_VERBOSE) << "Detour ok: " << SDKMC_SSHEX( OriginalProcessInternal->get(), 8) << '\n';
 
 }
 
@@ -133,7 +133,7 @@ void TraceStack()
 
 	for( i = 1; i < frames; i++ )
 	{
-		clog << std::dec << i << "\t" << SDKMC_SSHEX((DWORD64)stack[i], 8) << "\t" << SDKMC_SSHEX(((DWORD64)stack[i] - ModuleBaseAddr),8) << "\n";    
+		LOG(LL_DEBUG) << std::dec << i << "\t" << SDKMC_SSHEX((DWORD64)stack[i], 8) << "\t" << SDKMC_SSHEX(((DWORD64)stack[i] - ModuleBaseAddr),8) << "\n";    
 	}
 }
 
@@ -145,41 +145,38 @@ void         * stack[ 100 ];
 
 void __fastcall hkProcessEvent ( void* pthis, class UFunction* pFunction, void* pParams, void* pResult)
 {
-	time_t t = time(NULL);
-    struct tm *tm = localtime(&t);
-    char date[20];
-    strftime(date, sizeof(date), "%Y-%m-%d %H:%M", tm);
-	clog << date << " Caller_object: Addr: " << SDKMC_SSHEX(pthis, 8);
+	LOGTS(LL_DEBUG) << " Caller_object: Addr: " << SDKMC_SSHEX(pthis, 8);
 	if(pthis != NULL)
 	{
-		clog << " Name: " <<  ((UObject*)pthis)->GetFullName()
+		LOG(LL_DEBUG) << " Name: " <<  ((UObject*)pthis)->GetFullName()
 			 << " Function: Addr: " << SDKMC_SSHEX(pFunction, 8);
 
 		// log here
 		if( pFunction != NULL && (DWORD64)pFunction > 0x000007FFF0000000ll )
 		{
-			clog << pFunction << std::endl;
-			clog << " Name: " << pFunction->GetFullName();
+			LOG(LL_DEBUG) << pFunction << "\n";
+			LOG(LL_DEBUG) << " Name: " << pFunction->GetFullName();
 		}
 
-		clog  << " Params: Addr: "   << SDKMC_SSHEX(pParams, 8);
+		LOG(LL_DEBUG)  << " Params: Addr: "   << SDKMC_SSHEX(pParams, 8);
 
 		if( pParams != NULL && (DWORD64)pParams > 0x000007FFF0000000ll)
 		{
-			clog << pParams << std::endl;
-			clog << " Name: " << ((UObject*) pParams)->GetFullName();
+			LOG(LL_DEBUG) << pParams << "\n";
+			LOG(LL_DEBUG) << " Name: " << ((UObject*) pParams)->GetFullName();
 		}
 
-		clog << " Result:  Addr:"   << SDKMC_SSHEX(pResult, 8);
+		LOG(LL_DEBUG) << " Result:  Addr:"   << SDKMC_SSHEX(pResult, 8);
 
 		if( pResult != NULL && (DWORD64)pResult > 0x000007FFF0000000ll)
 		{
-			clog << pResult << std::endl;
-			clog << " Name: " << ((UObject*)pResult)->GetFullName();
+			LOG(LL_DEBUG) << pResult << "\n";
+			LOG(LL_DEBUG) << " Name: " << ((UObject*)pResult)->GetFullName();
 		}
 
 	}
-	clog << std::endl;
+
+	LOG(LL_DEBUG) << '\n';
 	// call original function
 	// (*(ProcessEventPtr)_vmt->GetOriginalFuncPtr(ProcessEvent_Index))(pthis,  pFunction, pParams, pResult);
 	// pOriginalProcessEvent(pthis,  pFunction, pParams, pResult);
@@ -188,26 +185,28 @@ void __fastcall hkProcessEvent ( void* pthis, class UFunction* pFunction, void* 
 
 void DumpH7Command(UH7Command* command)
 {
-	clog << "Command_Dump: is_run: " << command->mRunning << " type: " << std::dec << (int)command->mCommandType;
+	if( __gLog->Level() != LL_DEBUG) return;
+
+	LOG(LL_DEBUG) << "Command_Dump: is_run: " << command->mRunning << " type: " << std::dec << (int)command->mCommandType;
 	if( command->mPath.Data){
-		clog << " Path:"; 
+		LOG(LL_DEBUG) << " Path:"; 
 		for ( int i = 0; i < command->mPath.Count; i++){
-			clog << " X:" << command->mPath.Data[i]->mPosition.X;
-            clog << " Y:" << command->mPath.Data[i]->mPosition.Y;
+			LOG(LL_DEBUG) << " X:" << command->mPath.Data[i]->mPosition.X;
+            LOG(LL_DEBUG) << " Y:" << command->mPath.Data[i]->mPosition.Y;
 		}
 	}
 
 	if( command->mSource )
 	{
-		clog << " " << command->mSource->GetFullName();
+		LOG(LL_DEBUG) << " " << command->mSource->GetFullName();
 		if( !strcmp("H7CreatureStack TheWorld.PersistentLevel.H7CreatureStack", command->mSource->GetFullName() ))
 		{
 			AH7CreatureStack* creature = (AH7CreatureStack*) command->mSource;
-			clog << " Source stack size: " << creature->mStackSize << " Top stack size: " << creature->mTopCreatureHealth;
-			clog << " grid pos: (" << creature->mGridPos.X << "," << creature->mGridPos.Y << ")";
+			LOG(LL_DEBUG) << " Source stack size: " << creature->mStackSize << " Top stack size: " << creature->mTopCreatureHealth;
+			LOG(LL_DEBUG) << " grid pos: (" << creature->mGridPos.X << "," << creature->mGridPos.Y << ")";
 		}
 	}
-	clog << "\n";
+	LOG(LL_DEBUG) << "\n";
 }
 
 
@@ -237,15 +236,15 @@ void Init_Core()
 {
 	MODULEINFO miGame = GetModuleInfo ( NULL );
 	DWORD64 baseAddress = ModuleBaseAddr = (DWORD64)miGame.lpBaseOfDll;
-	clog << "Base Address: " << SDKMC_SSHEX(baseAddress,8) << "\n";
+	LOG(LL_VERBOSE) << "Base Address: " << SDKMC_SSHEX(baseAddress,8) << "\n";
 	// get GObjects
 	GObjects =  baseAddress + GObjects_Offset;
 
-	clog << "GObjects Address: " << SDKMC_SSHEX(GObjects, 8) << "\n";
+	LOG(LL_VERBOSE) << "GObjects Address: " << SDKMC_SSHEX(GObjects, 8) << "\n";
 
 	GNames =  baseAddress + GNames_Offset;
 
-	clog << "GNames Address: " << SDKMC_SSHEX(GNames, 8) << std::endl;
+	LOG(LL_VERBOSE) << "GNames Address: " << SDKMC_SSHEX(GNames, 8) << '\n';
 
 }
 

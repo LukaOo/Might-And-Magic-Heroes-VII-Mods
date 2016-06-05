@@ -143,6 +143,7 @@
     <ClInclude Include="CombatFeaturizer.h" />
     <ClInclude Include="CreatureStackFeaturizer.h" />
     <ClInclude Include="Featurizer.h" />
+    <ClInclude Include="GameLog.h" />
     <ClInclude Include="HookBase.h" />
     <ClInclude Include="memory.h" />
     <ClInclude Include="MMH7Mods.h" />
@@ -172,6 +173,7 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Featurizer.cpp" />
+    <ClCompile Include="GameLog.cpp" />
     <ClCompile Include="HookBase.cpp" />
     <ClCompile Include="memory.cpp" />
     <ClCompile Include="MMH7Mods.cpp" />

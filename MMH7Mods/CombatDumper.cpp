@@ -5,13 +5,22 @@
 #include "MMH7Mods.h"
 
 
+DumperConfig::DumperConfig(const ModsConfig& config) :
+	       sectionName("Dumper"),
+		   dumpFile(config.GetValue((sectionName+"/FilePath").c_str(), std::string("") ) ),
+		   isEnabled(config.GetValue((sectionName+"/Enabled").c_str(), false ))
 
-CombatDumper::CombatDumper(std::ostream& dump_stream, CombatFeaturizerPtr& combatFeturizer) : HookBase("CombatDumper"),
+{
+
+}
+
+CombatDumper::CombatDumper(const ModsConfig& config, CombatFeaturizerPtr& combatFeturizer) : HookBase("CombatDumper"),
+	           _config(config), 
 			   _fCommandPlay(this),
 			   _fCommandStop(this),
 			   _fGetInstance(this),
               _combat_controller(NULL),
-		      _dump_stream(dump_stream),
+			  _dump_stream(_config.dumpFile.c_str()),
 			  _combatFeaturesers(combatFeturizer)
 {
 }
@@ -49,7 +58,7 @@ void CombatDumper::PopulateBuffs(void* buff_manager, std::vector<float>& c_vec)
 
 void CombatDumper::DumpMap()
 {
-	if(!_combat_controller ) return;
+	if( !_config.isEnabled || !_combat_controller ) return;
 
 	_combatFeaturesers->ResetFeatures();
 	_combatFeaturesers->Init(_combat_controller);

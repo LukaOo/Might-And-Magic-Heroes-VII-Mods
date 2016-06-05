@@ -4,6 +4,7 @@
 #include "CombatDumper.h"
 #include "HookBase.h"
 #include "SdkClasses.h"
+#include "GameLog.h"
 
 
 HooksHolderPtr __hooksHolder;
@@ -43,7 +44,7 @@ bool HooksHolder::CallFunc(const std::string& funcName,
 void Init_Functions()
 {
 	_combatFeatures.reset(new CombatFeaturizer());
-	(*__hooksHolder)(CombatDumperPtr(new CombatDumper(clog, _combatFeatures)));
+	(*__hooksHolder)(CombatDumperPtr(new CombatDumper(*__Cfg,_combatFeatures)));
 }
 
 bool is_f_filter(char* fname)
@@ -62,14 +63,14 @@ int __fastcall hkProcessInternal ( __int64 This, __int64 Stack_frame, void* pRes
 
 	if ( pStack && pthis &&  !is_f_filter( pStack->Node->GetFullName() ) )
 	{
-		time_t t = time(NULL);
-		struct tm *tm = localtime(&t);
-		char date[20];
-		strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", tm);
-		clog << date << " [" << GetCurrentThreadId() << "] Object: " << SDKMC_SSHEX(pthis, 8) << ", name: " << pthis->GetFullName();
-		if ( pStack->Node )
+		if( __gLog->Level() == LL_DEBUG )
 		{
-			clog << ", func: " << pStack ->Node->GetFullName();  
+			LOGTS(LL_DEBUG)  << " [" << GetCurrentThreadId() << "] Object: " << SDKMC_SSHEX(pthis, 8) << ", name: " << pthis->GetFullName();
+			if ( pStack->Node )
+			{
+				LOG(LL_DEBUG) << ", func: " << pStack ->Node->GetFullName();  
+			}
+			LOG(LL_DEBUG) << "\n";
 		}
 		std::string func(pStack ->Node->GetFullName());
 		int retval = 0;

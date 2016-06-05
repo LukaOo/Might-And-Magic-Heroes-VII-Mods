@@ -12,8 +12,6 @@
 	#pragma pack ( push, 0x4 )
 #endif
 
-extern std::shared_ptr<ModsConfig> __Cfg;
-
 
 void OnAttach();
 void Init_Core();
@@ -29,9 +27,9 @@ typedef  int (*ProcessInternalPtr) ( __int64 pthis, __int64 stach_frame, void* p
 
 #define SDKMC_SSHEX( value, width )		"0x" << std::hex << std::uppercase << std::setfill ( '0' ) << std::setw ( width ) << std::right << value << std::nouppercase
 
-extern std::ofstream clog;
 extern std::shared_ptr<VMTManager> _vmt;
 extern VMTManager::DetourPtr OriginalProcessInternal;
+extern std::shared_ptr<ModsConfig> __Cfg;
 
 class UObject;
 class UFunction;

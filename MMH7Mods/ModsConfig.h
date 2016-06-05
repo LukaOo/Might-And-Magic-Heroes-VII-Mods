@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "libconfig++\libconfig.h++"
 
 ///
@@ -12,7 +14,7 @@ public:
 	~ModsConfig(void);
 	
 	template<class T>
-	T GetValue(const char* name, const T& def)
+	T GetValue(const char* name, const T& def) const
 	{
 		T val = def;
 		try
@@ -31,6 +33,8 @@ public:
 	}
 
 	const std::string& GetLogName() const {return LogFileName; } 
+
+	const libconfig::Config& GetConfig() const { return _cfg; };
 
 private :
 	std::string LogFileName;
