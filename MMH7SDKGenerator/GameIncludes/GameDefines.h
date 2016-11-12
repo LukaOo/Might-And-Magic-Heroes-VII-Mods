@@ -37,13 +37,18 @@
 // version 1.7
 // #define GObjects_Offset			0x0000000002300448ll
 // version 1.8
-#define GObjects_Offset			0x000000000239CD48ll
+//#define GObjects_Offset			0x000000000239CD48ll
+// version 2.2.1
+#define GObjects_Offset			0x00000000024656B8ll
 
 #define GNames_Pattern			"\x8B\x0D\x00\x00\x00\x00\x83\x3C\x81\x00\x74"
 #define GNames_Mask				"xx????xxxxx"
 // version 1.7
 // #define GNames_Offset			0x0000000002300400ll
-#define GNames_Offset			0x000000000239CD00ll
+// version 1.8
+//#define GNames_Offset			0x000000000239CD00ll
+// version 2.2.1
+#define GNames_Offset			0x0000000002465670ll
 
 // Function Flags ( incomplete )
 #define FUNC_Final				0x00000001
