@@ -19,7 +19,6 @@ int InitHintsFunc ( __int64 This, __int64 Stack_frame, void* pResult )
 		wchar_t* pHint = new wchar_t[ hint.length() + 1 ];
 		std::copy( hint.begin(), hint.end(), pHint );
 		//hints->mUsedHints(i) = pHint;
-		LOG(LL_VERBOSE) << "pHint:" << pHint << "\n";
 	}
 	return retval;
 }
