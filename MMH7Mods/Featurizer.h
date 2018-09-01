@@ -39,7 +39,7 @@ public:
     ///
 	/// Reset all feature set
 	///
-	void ResetFeatures() { std::fill(_features.begin(), _features.end(), 0); };
+	void ResetFeatures() { std::fill(_features.begin(), _features.end(), 0.f); };
 
 	///
 	/// init or calculate all features 

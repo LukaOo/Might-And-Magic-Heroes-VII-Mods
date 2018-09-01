@@ -49,6 +49,7 @@ InjectLibraryW(
 			__leave;
 		}
 
+
 		lpLoadLibraryW = (PTHREAD_START_ROUTINE)GetProcAddress(hKernel32Dll, "LoadLibraryW");
 		if(lpLoadLibraryW == 0)
 		{
@@ -92,6 +93,9 @@ InjectLibraryW(
 		// Calculate the number of bytes needed for the DLL's pathname
 		LibPathLen = (wcslen(lpLibPath) + 1) * sizeof(wchar_t);
 
+		//wprintf(lpLibPath);
+		//LoadLibraryW(lpLibPath);
+
 		// Allocate space in the remote process for the pathname
 		lpLibFileRemote = VirtualAllocEx(
 			hProcess,
@@ -99,21 +103,21 @@ InjectLibraryW(
 			LibPathLen, 
 			MEM_COMMIT, 
 			PAGE_READWRITE);
-		if(!lpLibFileRemote)
+		if(!lpLibFileRemote || GetLastError() )
 		{
 			PRINT_ERROR_MSGA("Could not allocate memory in remote process.");
 			__leave;
 		}
 
 		if(!WriteProcessMemory(hProcess, lpLibFileRemote, (LPCVOID)(lpLibPath), LibPathLen, &NumBytesWritten) ||
-			NumBytesWritten != LibPathLen)
+			NumBytesWritten != LibPathLen || GetLastError())
 		{
 			PRINT_ERROR_MSGA("Could not write to memory in remote process.");
 			__leave;
 		}
 
 		// flush instruction cache
-		if(!FlushInstructionCache(hProcess, lpLibFileRemote, LibPathLen))
+		if(!FlushInstructionCache(hProcess, lpLibFileRemote, LibPathLen) || GetLastError())
 		{
 			PRINT_ERROR_MSGA("Could not flush instruction cache.");
 			__leave;
@@ -128,33 +132,33 @@ InjectLibraryW(
 			lpLibFileRemote,
 			0,
 			&dwThreadId);
-		if(hThread == 0)
+		if(hThread == 0 || GetLastError())
 		{
 			PRINT_ERROR_MSGA("Could not create thread in remote process.");
 			__leave;
 		}
 
-		if(!SetThreadPriority(hThread, THREAD_PRIORITY_TIME_CRITICAL))
+		if(!SetThreadPriority(hThread, THREAD_PRIORITY_TIME_CRITICAL) || GetLastError())
 		{
 			PRINT_ERROR_MSGA("Could not set thread priority.");
 			__leave;
 		}
 
-		if(!HideThreadFromDebugger(dwThreadId))
+		if(!HideThreadFromDebugger(dwThreadId) || GetLastError())
 		{
 			PRINT_ERROR_MSGA("Could not hide thread in remote process (ThreadId: 0x%X).", dwThreadId);
 			__leave;
 		}
 
 		// Wait for the remote thread to terminate
-		if(WaitForSingleObject(hThread, INJLIB_WAITTIMEOUT) == WAIT_FAILED)
+		if(WaitForSingleObject(hThread, INJLIB_WAITTIMEOUT) == WAIT_FAILED || GetLastError())
 		{
 			PRINT_ERROR_MSGA("WaitForSingleObject failed.");
 			__leave;
 		}
 
 		// Get thread exit code
-		if(!GetExitCodeThread(hThread, &dwExitCode))
+		if(!GetExitCodeThread(hThread, &dwExitCode) || GetLastError())
 		{
 			PRINT_ERROR_MSGA("Could not get thread exit code.");
 			__leave;
@@ -185,16 +189,18 @@ InjectLibraryW(
 			wprintf(L"Successfully injected (%s | PID: %x):\n\n"
 				L"  AllocationBase:\t0x%p\n"
 				L"  EntryPoint:\t\t0x%p\n"
-				L"  SizeOfImage:\t\t0x%p\n"
-				L"  CheckSum:\t\t0x%p\n"
-				L"  ExitCodeThread:\t0x%p\n",
+				L"  SizeOfImage:\t\t0x%x\n"
+				L"  CheckSum:\t\t0x%x\n"
+				L"  ExitCodeThread:\t0x%x\n",
 				NtFileNameThis,
 				dwProcessId,
 				lpInjectedModule,
-				(DWORD_PTR)lpInjectedModule + nt_header.OptionalHeader.AddressOfEntryPoint,
+				(void*)((DWORD_PTR)lpInjectedModule + nt_header.OptionalHeader.AddressOfEntryPoint),
 				nt_header.OptionalHeader.SizeOfImage,
 				nt_header.OptionalHeader.CheckSum,
 				dwExitCode);
+		}
+		else {
 		}
 
 		if(dwExitCode == 0)
@@ -364,7 +370,7 @@ EjectLibrary(
 		}
 
 		printf("Successfully ejected (0x%p | PID: %x):\n\n"
-			"  ExitCodeThread:\t\t0x%p\n",
+			"  ExitCodeThread:\t\t0x%x\n",
 			lpModule,
 			dwProcessId,
 			dwExitCode);

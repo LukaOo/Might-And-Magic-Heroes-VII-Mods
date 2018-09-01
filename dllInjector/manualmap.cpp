@@ -508,12 +508,12 @@ MapRemoteModuleW(
 		wprintf(L"Successfully injected (%s | PID: %x):\n\n"
 			L"  AllocationBase:\t0x%p\n"
 			L"  EntryPoint:\t\t0x%p\n"
-			L"  SizeOfImage:\t\t0x%p\n"
-			L"  CheckSum:\t\t0x%p\n",
+			L"  SizeOfImage:\t\t0x%x\n"
+			L"  CheckSum:\t\t0x%x\n",
 			lpModulePath,
 			dwProcessId,
 			lpModuleBase,
-			(DWORD_PTR)lpModuleBase + nt_header->OptionalHeader.AddressOfEntryPoint,
+			(void*)((DWORD_PTR)lpModuleBase + nt_header->OptionalHeader.AddressOfEntryPoint),
 			nt_header->OptionalHeader.SizeOfImage,
 			nt_header->OptionalHeader.CheckSum);
 	}
