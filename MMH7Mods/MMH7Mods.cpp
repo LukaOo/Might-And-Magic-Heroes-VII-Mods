@@ -51,18 +51,27 @@ CRITICAL_SECTION CriticalSection;
 // Initialize any function to be detoured as ProcessInternall
 #define FUNCTION_THINK "Function MMH7Game.H7AiCombatMap.Think"
 
-void Init_Variables()
+bool Init_Variables()
 {
+	bool init = false;
   __Cfg.reset(new ModsConfig() );
-  __gLog.reset(new GameLog(*__Cfg));
-  __hooksHolder.reset(new HooksHolder());
+  if (__Cfg->IsConfigured()) 
+  {
+	  __gLog.reset(new GameLog(*__Cfg));
+	  __hooksHolder.reset(new HooksHolder());
+	  init = true;
+  }
 
+  return init;
 }
 
 void OnAttach()
 {
   // Init variables
-  Init_Variables();
+  if (!Init_Variables()) {
+	  std::cerr << "Initialization failed." << std::endl;
+	  return;
+  }
 
   // Initialize core pointers 
   Init_Core();

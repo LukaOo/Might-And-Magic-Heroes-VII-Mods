@@ -13,7 +13,7 @@ Featurizer::~Featurizer(void)
 }
 
 Featurizer::Fea::Fea() : 
-                        _idx(Featurizer::_features.size())
+                        _idx(int(Featurizer::_features.size()))
 {
 	Featurizer::_features.push_back(0);
 }

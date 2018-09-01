@@ -30,7 +30,8 @@
 #include "generic_injector.h"
 #include "manualmap.h"
 
-typedef struct INJ_DATA
+//typedef
+struct INJ_DATA
 {
 	BYTE mode;
 	LPCSTR name;

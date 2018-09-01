@@ -24,7 +24,7 @@ public:
 				val = def;
 			}
 		 }
-		 catch(const libconfig::SettingNotFoundException &nfex)
+		 catch(const libconfig::SettingNotFoundException &/*nfex*/)
 		 {
 			std::cerr << "No 'name' setting in configuration file." << std::endl;
 		 }
@@ -32,13 +32,17 @@ public:
        return val;
 	}
 
-	const std::string& GetLogName() const {return LogFileName; } 
+	const std::string& GetLogName() const {return _logFileName; } 
 
 	const libconfig::Config& GetConfig() const { return _cfg; };
 
+	const bool IsConfigured() const { return _isConfigured;  }
+
 private :
-	std::string LogFileName;
+	std::string _logFileName;
 private :
 	libconfig::Config _cfg;
+	bool _isConfigured;
+	std::string _processName;
 };
 

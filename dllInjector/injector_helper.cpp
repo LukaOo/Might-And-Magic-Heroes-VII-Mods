@@ -230,7 +230,7 @@ HideThreadFromDebugger(
 
 	LONG (NTAPI *_NtSetInformationThread)(
 		HANDLE ThreadHandle,
-		THREAD_INFORMATION_CLASS ThreadInformationClass,
+		NT_THREAD_INFORMATION_CLASS ThreadInformationClass,
 		PVOID ThreadInformation,
 		ULONG ThreadInformationLength) = 0;
 
@@ -244,7 +244,7 @@ HideThreadFromDebugger(
 		}
 
 		_NtSetInformationThread =
-			(LONG (NTAPI*)(HANDLE, THREAD_INFORMATION_CLASS, PVOID, ULONG))
+			(LONG (NTAPI*)(HANDLE, NT_THREAD_INFORMATION_CLASS, PVOID, ULONG))
 			GetProcAddress(hNtDll, "NtSetInformationThread");
 		if(_NtSetInformationThread == 0)
 		{
@@ -374,7 +374,7 @@ ModuleInjectedW(
 
 	GetSystemInfo(&sys_info);
 
-	printf("Process handle: 0x%x, max mem address: 0x%x\n", hProcess, sys_info.lpMaximumApplicationAddress );
+	printf("Process handle: 0x%p, max mem address: 0x%p\n", hProcess, sys_info.lpMaximumApplicationAddress );
 
 	for(Memory = 0;
 		Memory < (SIZE_T)sys_info.lpMaximumApplicationAddress;
@@ -394,7 +394,7 @@ ModuleInjectedW(
 					PRINT_ERROR_MSGA("GetMappedFileNameW failed.");
 					return 0;
 				}
-
+				
 				if(wcsncmp(NtMappedFileName, lpLibPathNt, wcslen(lpLibPathNt) + 1) == 0)
 				{
 					return mem_basic_info.AllocationBase;
@@ -487,14 +487,14 @@ ListModules(
 					{
 						if(sizeof(PVOID) == 4)
 						{
-							wprintf(L"%p\t %p\t  %s\n",
+							wprintf(L"0x%p\t 0x%x\t  %s\n",
 								mem_basic_info.AllocationBase,
 								nt_header.OptionalHeader.SizeOfImage,
 								ntMappedFileName);
 						}
 						else if(sizeof(PVOID) == 8)
 						{
-							wprintf(L"%p %p %s\n",
+							wprintf(L"0x%p 0x%x %s\n",
 								mem_basic_info.AllocationBase,
 								nt_header.OptionalHeader.SizeOfImage,
 								ntMappedFileName);
