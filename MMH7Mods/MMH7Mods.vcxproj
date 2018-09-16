@@ -152,6 +152,8 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AiAdventureMap.h" />
+    <ClInclude Include="AIMod.h" />
     <ClInclude Include="ArmyFeaturizer.h" />
     <ClInclude Include="CombatDumper.h" />
     <ClInclude Include="CombatFeaturizer.h" />
@@ -168,6 +170,8 @@
     <ClInclude Include="vmthooks.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AiAdventureMap.cpp" />
+    <ClCompile Include="AIMod.cpp" />
     <ClCompile Include="ArmyFeaturizer.cpp" />
     <ClCompile Include="CombatDumper.cpp" />
     <ClCompile Include="CombatFeaturizer.cpp" />

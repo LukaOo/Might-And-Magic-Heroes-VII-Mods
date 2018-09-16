@@ -75,7 +75,6 @@ ModsConfig::ModsConfig(void)
 	_isConfigured = false;
 	if (ReadConfig(_cfg)) 
 	{
-		_logFileName = GetValue("LogFile", std::string(""));
 		_isConfigured = true;
 	}
 

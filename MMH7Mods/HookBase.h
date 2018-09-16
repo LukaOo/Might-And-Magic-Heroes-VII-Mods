@@ -91,7 +91,8 @@ public:
 	}
 
 	//
-	// Call function
+	// Call function. System calls this method to replace script 
+	// function 
 	//
 	bool CallFunc(const std::string& funcName,
 	              __int64 This, __int64 Stack_frame, void* pResult,
