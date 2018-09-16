@@ -60,7 +60,7 @@ public:
 
 protected :
 
-	std::ostream* GetStream(){ return &_clog; }
+	std::ostream* GetStream(){ return (_clog.good())?&_clog:&std::cout; }
 
 private :
 	LogConfig     _cfg;

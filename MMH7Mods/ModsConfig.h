@@ -23,6 +23,7 @@ public:
 			{
 				val = def;
 			}
+
 		 }
 		 catch(const libconfig::SettingNotFoundException &/*nfex*/)
 		 {
@@ -31,12 +32,12 @@ public:
 
        return val;
 	}
-
-	const std::string& GetLogName() const {return _logFileName; } 
-
+	
 	const libconfig::Config& GetConfig() const { return _cfg; };
 
 	const bool IsConfigured() const { return _isConfigured;  }
+
+	const std::string& GetProcessName() const { return _processName; }
 
 private :
 	std::string _logFileName;

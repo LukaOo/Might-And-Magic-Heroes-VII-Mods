@@ -30,6 +30,7 @@ DWORD64 GNames = 0;
 DWORD64 ModuleBaseAddr = 0;
 std::shared_ptr<VMTManager> _vmt;
 std::shared_ptr<ModsConfig> __Cfg;
+const std::string GameModuleName("MMH7Game-Win64-Shipping.exe");
 
 
 //void init_ptrs_list(); 
@@ -70,6 +71,13 @@ void OnAttach()
   // Init variables
   if (!Init_Variables()) {
 	  std::cerr << "Initialization failed." << std::endl;
+	  return;
+  }
+
+  LOG(LL_VERBOSE) << "Dll loaded into: " << __Cfg->GetProcessName() << "\n";
+  if (GameModuleName != __Cfg->GetProcessName())
+  {
+	  LOG(LL_NORMAL) << "Process name '" << __Cfg->GetProcessName() << "' is not MMH7 game. Required name: " << GameModuleName << "\n";
 	  return;
   }
 
