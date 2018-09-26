@@ -16,6 +16,6 @@ Directory structure:
 This branch is to migrate the project on Win10 and VS 2017.
 ### External dependencies:
 * Dll Injector: [Xenos](https://github.com/DarthTon/Xenos)
-* [liconfig](https://hyperrealm.github.io/libconfig/)
+* [libconfig](https://hyperrealm.github.io/libconfig/)
 
 [x] To do migration on windows 10 and VS 2017 (while MMH7Mod.dll)
