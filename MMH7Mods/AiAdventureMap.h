@@ -24,7 +24,7 @@ private :
 class AIAdventureMap
 {
 public:
-	AIAdventureMap(AH7AdventureController* controller, AH7AiAdventureMap* aiAdvMap);
+	AIAdventureMap(AH7AdventureController* controller, AH7AiAdventureMap* aiAdvMap, AH7AdventureGridManager* gridManager);
 	virtual ~AIAdventureMap();
 	
 	bool Think(AH7Unit* Unit, float DeltaTime);
@@ -32,6 +32,7 @@ public:
 private :
 	AH7AdventureController* _controller; 
 	AH7AiAdventureMap* _aiAdvMap;
+	AH7AdventureGridManager* _gridManager;
 	std::mutex _lock;
 };
 
