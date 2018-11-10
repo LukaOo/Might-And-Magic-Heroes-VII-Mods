@@ -4,6 +4,7 @@
 class AH7AdventureGridManager;
 class AH7AdventureController;
 class AH7AdventureHero;
+class AH7CombatController;
 
 ///
 /// AIMod configuration
@@ -45,6 +46,7 @@ private:
 	AH7AdventureController*  _pAdventureController;
 	AH7AdventureHero* _pAttackingHero;
 	AH7AdventureHero* _pDefendingHero;
+	AH7CombatController* _pCombatController;
 	unsigned long _QuickCombatAllowed;
 
 	/// 
@@ -53,8 +55,11 @@ private:
 	int AiAdventureMap_ThinkFunc(__int64 pthis, __int64 stack_frame, void* pResult);
 	int H7AdventureGridManager_PostBeginPlay(__int64 pthis, __int64 stack_frame, void* pResult);
 	int GetInstanceFun(__int64 pthis, __int64 stack_frame, void* pResult);
+	int H7CombatController_GetInstance(__int64 pthis, __int64 stack_frame, void* pResult);
 	int H7InstantCommandDoCombat_Init(__int64 pthis, __int64 stack_frame, void* pResult);
 	int H7InstantCommandDoCombat_Execute(__int64 pthis, __int64 stack_frame, void* pResult);
+	int H7CombatController_EndOfCombat_TravelBack(__int64 pthis, __int64 stack_frame, void* pResult);
+	int H7AdventureController_DoBackToAdventureFromCombat(__int64 pthis, __int64 stack_frame, void* pResult);
 
 	///
 	/// Function to initialize grid manager poiner
@@ -129,6 +134,53 @@ private:
 		};
 
 	} _fH7InstantCommandDoCombat_Execute;
+
+	///
+	/// Function H7CombatController.EndOfCombat.TravelBack
+	/// EndOfCombat - controller state
+	/// Returns to Adventure map after combat
+	///
+	class H7CombatController_EndOfCombat_TravelBack : public HookFunction
+	{
+	public:
+		H7CombatController_EndOfCombat_TravelBack(AIMod* pBase) : HookFunction(pBase, "Function H7CombatController.EndOfCombat.TravelBack") {}
+		int Func(__int64 This, __int64 Stack_frame, void* pResult)
+		{
+			return ((AIMod*)_pBase)->H7CombatController_EndOfCombat_TravelBack(This, Stack_frame, pResult);
+		};
+
+	} _fH7CombatController_EndOfCombat_TravelBack;
+
+	///
+    /// Process internal function H7CombatController_GetInstance
+	/// To get instance of current combat controller
+    ///
+	class H7CombatController_GetInstance : public HookFunction
+	{
+	public:
+		H7CombatController_GetInstance(AIMod* pBase) : HookFunction(pBase, "Function MMH7Game.H7CombatController.GetInstance") {}
+		int Func(__int64 This, __int64 Stack_frame, void* pResult)
+		{
+			return ((AIMod*)_pBase)->H7CombatController_GetInstance(This, Stack_frame, pResult);
+		};
+
+	} _fH7CombatController_GetInstance;
+
+	//
+	// Function MMH7Game.H7AdventureController.DoBackToAdventureFromCombat
+	// Rewrite to return defended army back to map
+	// 
+	class H7AdventureController_DoBackToAdventureFromCombat : public HookFunction
+	{
+	public:
+		H7AdventureController_DoBackToAdventureFromCombat(AIMod* pBase) : HookFunction(pBase, "Function MMH7Game.H7AdventureController.DoBackToAdventureFromCombat") {}
+		int Func(__int64 This, __int64 Stack_frame, void* pResult)
+		{
+			return ((AIMod*)_pBase)->H7AdventureController_DoBackToAdventureFromCombat(This, Stack_frame, pResult);
+		};
+
+	} _fH7AdventureController_DoBackToAdventureFromCombat;
+
 };
 
 typedef std::shared_ptr<AIMod> AIModPtr;
