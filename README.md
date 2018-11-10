@@ -19,3 +19,4 @@ This branch is to migrate the project on Win10 and VS 2017.
 * [libconfig](https://hyperrealm.github.io/libconfig/)
 
 [x] To do migration on windows 10 and VS 2017 (while MMH7Mod.dll)
+[ ] Create environment to have possibility to learn combat AI
