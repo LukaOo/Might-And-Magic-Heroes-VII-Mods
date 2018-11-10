@@ -16,7 +16,6 @@
 void OnAttach();
 void Init_Core();
 void Init_Functions();
-void Read_Config();
 
 void __fastcall hkProcessEvent ( void* pthis, class UFunction* pFunction, void* pParms, void* pResult = NULL );
 

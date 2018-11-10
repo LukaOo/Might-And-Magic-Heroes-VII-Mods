@@ -30,6 +30,7 @@ DWORD64 GNames = 0;
 DWORD64 ModuleBaseAddr = 0;
 std::shared_ptr<VMTManager> _vmt;
 std::shared_ptr<ModsConfig> __Cfg;
+const std::string GameModuleName("MMH7Game-Win64-Shipping.exe");
 
 
 //void init_ptrs_list(); 
@@ -51,18 +52,34 @@ CRITICAL_SECTION CriticalSection;
 // Initialize any function to be detoured as ProcessInternall
 #define FUNCTION_THINK "Function MMH7Game.H7AiCombatMap.Think"
 
-void Init_Variables()
+bool Init_Variables()
 {
+	bool init = false;
   __Cfg.reset(new ModsConfig() );
-  __gLog.reset(new GameLog(*__Cfg));
-  __hooksHolder.reset(new HooksHolder());
+  if (__Cfg->IsConfigured()) 
+  {
+	  __gLog.reset(new GameLog(*__Cfg));
+	  __hooksHolder.reset(new HooksHolder());
+	  init = true;
+  }
 
+  return init;
 }
 
 void OnAttach()
 {
   // Init variables
-  Init_Variables();
+  if (!Init_Variables()) {
+	  std::cerr << "Initialization failed." << std::endl;
+	  return;
+  }
+
+  LOG(LL_VERBOSE) << "Dll loaded into: " << __Cfg->GetProcessName() << "\n";
+  if (GameModuleName != __Cfg->GetProcessName())
+  {
+	  LOG(LL_NORMAL) << "Process name '" << __Cfg->GetProcessName() << "' is not MMH7 game. Required name: " << GameModuleName << "\n";
+	  return;
+  }
 
   // Initialize core pointers 
   Init_Core();

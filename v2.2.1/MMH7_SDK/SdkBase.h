@@ -144,7 +144,7 @@ struct FString : public TArray< wchar_t >
 
 	FString ( wchar_t* Other ) 
 	{ 
-		this->Max = this->Count = *Other ? ( wcslen ( Other ) + 1 ) : 0; 
+		this->Max = this->Count = int( *Other ? ( wcslen ( Other ) + 1 ) : 0); 
 
 		if ( this->Count ) 
 			this->Data = Other; 
@@ -156,7 +156,7 @@ struct FString : public TArray< wchar_t >
 	{ 
 		if ( this->Data != Other ) 
 		{ 
-			this->Max = this->Count = *Other ? ( wcslen ( Other ) + 1 ) : 0; 
+			this->Max = this->Count = int( *Other ? ( wcslen ( Other ) + 1 ) : 0); 
 
 			if ( this->Count ) 
 				this->Data = Other; 

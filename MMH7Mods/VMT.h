@@ -8,7 +8,7 @@
 //#include "capstone.h"
 //#pragma comment(lib,"capstone.lib")
 ///
-/// Virtual table  menegaer class
+/// Virtual table  menager class
 ///
 class VMTManager
 {

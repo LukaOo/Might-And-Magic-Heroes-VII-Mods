@@ -18,7 +18,6 @@ GameLog::GameLog(const ModsConfig& config) :
                  _cfg(config),
 				 _clog(_cfg.filePath.c_str())
 {
-
 }
 
 

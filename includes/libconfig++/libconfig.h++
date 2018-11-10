@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------------
    libconfig - A library for processing structured configuration files
-   Copyright (C) 2005-2014  Mark A Lindner
+   Copyright (C) 2005-2018  Mark A Lindner
 
    This file is part of libconfig.
 
@@ -40,7 +40,7 @@
 #endif /* WIN32 */
 
 #define LIBCONFIGXX_VER_MAJOR    1
-#define LIBCONFIGXX_VER_MINOR    5
+#define LIBCONFIGXX_VER_MINOR    7
 #define LIBCONFIGXX_VER_REVISION 0
 
 struct config_t; // fwd decl
@@ -170,16 +170,6 @@ class LIBCONFIGXX_API Setting
     FormatHex = 1
   };
 
-  enum Option
-  {
-    OptionNone = 0,
-    OptionAutoConvert = 0x01,
-    OptionSemicolonSeparators = 0x02,
-    OptionColonAssignmentForGroups = 0x04,
-    OptionColonAssignmentForNonGroups = 0x08,
-    OptionOpenBraceOnSeparateLine = 0x10
-  };
-
   typedef SettingIterator iterator;
   typedef SettingConstIterator const_iterator;
 
@@ -221,6 +211,10 @@ class LIBCONFIGXX_API Setting
   { return(lookup(path.c_str())); }
 
   Setting & operator[](const char *name) const;
+
+  inline Setting & operator[](const std::string &name) const
+  { return(operator[](name.c_str())); }
+
   Setting & operator[](int index) const;
 
   bool lookupValue(const char *name, bool &value) const;
@@ -446,14 +440,33 @@ class LIBCONFIGXX_API Config
 {
   public:
 
+  enum Option
+  {
+    OptionNone = 0,
+    OptionAutoConvert = 0x01,
+    OptionSemicolonSeparators = 0x02,
+    OptionColonAssignmentForGroups = 0x04,
+    OptionColonAssignmentForNonGroups = 0x08,
+    OptionOpenBraceOnSeparateLine = 0x10,
+    OptionAllowScientificNotation = 0x20,
+    OptionFsync = 0x40
+  };
+
   Config();
   virtual ~Config();
+
+  void clear();
 
   void setOptions(int options);
   int getOptions() const;
 
-  void setAutoConvert(bool flag);
-  bool getAutoConvert() const;
+  void setOption(Config::Option option, bool flag);
+  bool getOption(Config::Option option) const;
+
+  inline void setAutoConvert(bool flag)
+  { setOption(Config::OptionAutoConvert, flag); }
+  inline bool getAutoConvert() const
+  { return(getOption(Config::OptionAutoConvert)); }
 
   void setDefaultFormat(Setting::Format format);
   inline Setting::Format getDefaultFormat() const
@@ -462,8 +475,14 @@ class LIBCONFIGXX_API Config
   void setTabWidth(unsigned short width);
   unsigned short getTabWidth() const;
 
+  void setFloatPrecision(unsigned short digits);
+  unsigned short getFloatPrecision() const;
+
   void setIncludeDir(const char *includeDir);
   const char *getIncludeDir() const;
+
+  virtual const char **evaluateIncludePath(const char *path,
+                                           const char **error);
 
   void read(FILE *stream);
   void write(FILE *stream) const;

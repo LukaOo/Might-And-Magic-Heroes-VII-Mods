@@ -11,3 +11,11 @@ Directory structure:
 * UEScripts - unpacked UE3 scripts 
 * libs - external libraries
 * includes - external libraries includes
+
+### Description
+This branch is to migrate the project on Win10 and VS 2017.
+### External dependencies:
+* Dll Injector: [Xenos](https://github.com/DarthTon/Xenos)
+* [libconfig](https://hyperrealm.github.io/libconfig/)
+
+[x] To do migration on windows 10 and VS 2017 (while MMH7Mod.dll)

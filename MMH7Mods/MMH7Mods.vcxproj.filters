@@ -60,6 +60,12 @@
     <ClInclude Include="GameLog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AIMod.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AiAdventureMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -104,5 +110,16 @@
     <ClCompile Include="GameLog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AIMod.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AiAdventureMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="MMH7Mods.dll.cfg">
+      <Filter>Resource Files</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

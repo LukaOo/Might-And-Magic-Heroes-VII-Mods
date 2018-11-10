@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iomanip>
 #include "CombatDumper.h"
+#include "AIMod.h"
 #include "HookBase.h"
 #include "SdkClasses.h"
 #include "GameLog.h"
@@ -41,11 +42,17 @@ bool HooksHolder::CallFunc(const std::string& funcName,
   return success;
 }
 
-void Init_Functions()
+void Init_FunctionsDumper()
 {
 	_combatFeatures.reset(new CombatFeaturizer());
-	(*__hooksHolder)(CombatDumperPtr(new CombatDumper(*__Cfg,_combatFeatures)));
+	(*__hooksHolder)(CombatDumperPtr(new CombatDumper(*__Cfg, _combatFeatures)));
 }
+
+void Init_Functions()
+{
+	(*__hooksHolder)(AIModPtr(new AIMod(*__Cfg)));
+}
+
 
 bool is_f_filter(char* fname)
 {
