@@ -30,9 +30,9 @@ public:
 	bool Think(AH7Unit* Unit, float DeltaTime);
 
 private :
-	AH7AdventureController* _controller; 
-	AH7AiAdventureMap* _aiAdvMap;
-	AH7AdventureGridManager* _gridManager;
+	AH7AdventureController* _pController; 
+	AH7AiAdventureMap* _pAiAdvMap;
+	AH7AdventureGridManager* _pGridManager;
 	std::mutex _lock;
 };
 

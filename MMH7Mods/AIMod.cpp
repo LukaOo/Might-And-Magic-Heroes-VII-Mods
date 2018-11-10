@@ -21,12 +21,16 @@ AIMod::AIMod(const ModsConfig& config) : HookBase("AIMod"),
 	        _pAdventureController(NULL),
 			_pAttackingHero(NULL),
 			_pDefendingHero(NULL),
+	        _pCombatController(NULL),
 	        _QuickCombatAllowed(1),
 	        _fAiAdventureMap_Think(this),
 			_fH7AdventureGridManager_PostBeginPlay(this),
 	        _fGetInstance(this),
 			_fH7InstantCommandDoCombat_Init(this),
-	        _fH7InstantCommandDoCombat_Execute(this)
+	        _fH7InstantCommandDoCombat_Execute(this),
+			_fH7CombatController_EndOfCombat_TravelBack(this),
+			_fH7CombatController_GetInstance(this),
+			_fH7AdventureController_DoBackToAdventureFromCombat(this)
 {
 
 }
@@ -67,6 +71,33 @@ int AIMod::GetInstanceFun(__int64 This, __int64 Stack_frame, void* pResult)
 	return retval;
 }
 
+int AIMod::H7AdventureController_DoBackToAdventureFromCombat(__int64 This, __int64 Stack_frame, void* pResult)
+{
+	FFrame* pStack = (FFrame*)Stack_frame;
+
+	AH7AdventureController_execDoBackToAdventureFromCombat_Parms* pParams = (AH7AdventureController_execDoBackToAdventureFromCombat_Parms*)pStack->Locals;
+	UH7AdventureMapCell* prevCell = NULL;
+	FVector location;
+	if (pParams != NULL && pParams->defeatArmy != NULL) 
+	{
+		prevCell = pParams->defeatArmy->GetCell();
+		location = pParams->defeatArmy->Location;
+	}
+	int retval = ((ProcessInternalPtr)OriginalProcessInternal->get())(This, Stack_frame, pResult);
+
+	if (pParams != NULL && pParams->defeatArmy != NULL && prevCell == 0)
+	{
+		// pParams->defeatArmy->mIsDead = 0;
+		// pParams->defeatArmy->SetLocation(location);
+		// pParams->defeatArmy->SetCell(prevCell, 1, 1, 1);
+		// pParams->defeatArmy->ShowArmy();
+		char * name = pParams->defeatArmy->GetFullName();
+		LOG(LL_DEBUG) << "H7AdventureController_DoBackToAdventureFromCombat. DefeatArmy is " << name << "\n";
+	}
+
+	return retval;
+}
+
 int AIMod::H7InstantCommandDoCombat_Init(__int64 This, __int64 Stack_frame, void* pResult)
 {
 	UH7InstantCommandDoCombat* instantManager = (UH7InstantCommandDoCombat*)This;
@@ -92,7 +123,7 @@ int AIMod::H7InstantCommandDoCombat_Execute(__int64 This, __int64 Stack_frame, v
 {
 	UH7InstantCommandDoCombat* instantManager = (UH7InstantCommandDoCombat*)This;
 	FFrame * Stack = (FFrame*)Stack_frame;
-	int retval = 0;
+	int retval = 1;
 	if (!_QuickCombatAllowed && _pAttackingHero != NULL && _pDefendingHero != NULL) {
 
 		LOG(LL_DEBUG) << "H7InstantCommandDoCombat_Execute QuickCombat flag is " << _QuickCombatAllowed << "\n";
@@ -106,7 +137,9 @@ int AIMod::H7InstantCommandDoCombat_Execute(__int64 This, __int64 Stack_frame, v
 				replicationInfo->SetCombatPlayerType(2);
 			}
 		}
+		LOG(LL_DEBUG) << "H7InstantCommandDoCombat_Execute Start combat map \n";
 		instantManager->StartCombatMap();
+		LOG(LL_DEBUG) << "H7InstantCommandDoCombat_Execute End combat map \n";
 	}
 	else {
 	    retval = ((ProcessInternalPtr)OriginalProcessInternal->get())(This, Stack_frame, pResult);
@@ -114,6 +147,30 @@ int AIMod::H7InstantCommandDoCombat_Execute(__int64 This, __int64 Stack_frame, v
 
 	return retval;
 }
+
+int AIMod::H7CombatController_EndOfCombat_TravelBack(__int64 This, __int64 Stack_frame, void* pResult)
+{
+	if (_pCombatController != NULL) {
+		bool comingFromAdvMap = _pCombatController->IsCombatComingFromAdventureMap();
+		LOG(LL_DEBUG) << " H7CombatController_EndOfCombat_TravelBack IsCombatComingFromAdventureMap " << comingFromAdvMap << "\n";
+	}
+	int retval = ((ProcessInternalPtr)OriginalProcessInternal->get())(This, Stack_frame, pResult);
+
+	return retval;
+}
+
+int AIMod::H7CombatController_GetInstance(__int64 This, __int64 Stack_frame, void* pResult)
+{
+	FFrame* pStack = (FFrame*)Stack_frame;
+
+	int retval = ((ProcessInternalPtr)OriginalProcessInternal->get())(This, Stack_frame, pResult);
+
+	AH7CombatController_execGetInstance_Parms* params = (AH7CombatController_execGetInstance_Parms*)pResult;
+	_pCombatController = params->ReturnValue;
+
+	return retval;
+}
+
 
 int  AIMod::AiAdventureMap_ThinkFunc(__int64 This, __int64 Stack_frame, void* pResult)
 {
